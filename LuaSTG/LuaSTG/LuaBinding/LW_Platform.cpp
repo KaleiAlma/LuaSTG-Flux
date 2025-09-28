@@ -50,9 +50,9 @@ void luastg::binding::Platform::Register(lua_State* L) noexcept
 			}
 			return 1;
 		}
-#ifdef DEFINE_EXECUTE_API_FUNCTION
 		static int Execute(lua_State* L) noexcept
 		{
+#ifdef DEFINE_EXECUTE_API_FUNCTION
 			struct Detail_
 			{
 				static bool Execute(const char* path, const char* args, const char* directory, bool bWait, bool bShow) noexcept
@@ -106,8 +106,11 @@ void luastg::binding::Platform::Register(lua_State* L) noexcept
 			
 			lua_pushboolean(L, Detail_::Execute(path, args, directory, bWait, bShow));
 			return 1;
-		}
+#else
+			luaL_error(L, "Execute() is disabled in your LuaSTG-Flux build for security reasons.\nIf you have to use it, please build the engine yourself with the flag turned on.");
+			return 0;
 #endif
+		}
 		static int api_MessageBox(lua_State* L)
 		{
 			char const* title = luaL_checkstring(L, 1);
@@ -126,9 +129,7 @@ void luastg::binding::Platform::Register(lua_State* L) noexcept
 	luaL_Reg const lib[] = {
 		{ "GetLocalAppDataPath", &Wrapper::GetLocalAppDataPath },
 		{ "GetRoamingAppDataPath", &Wrapper::GetRoamingAppDataPath },
-#ifdef DEFINE_EXECUTE_API_FUNCTION
 		{ "Execute", &Wrapper::Execute },
-#endif
 		{ "MessageBox", &Wrapper::api_MessageBox },
 		{ NULL, NULL },
 	};

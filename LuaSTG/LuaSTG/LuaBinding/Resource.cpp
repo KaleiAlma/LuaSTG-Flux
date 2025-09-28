@@ -3,11 +3,11 @@
 
 namespace luastg::binding
 {
-	static constexpr std::string_view const ModuleID{ "LuaSTG.Sub" };
+	static constexpr std::string_view const ModuleID{ "LuaSTG.Flux" };
 
 	struct ResourceTexture
 	{
-		static constexpr std::string_view const ClassID{ "LuaSTG.Sub.ResourceTexture" };
+		static constexpr std::string_view const ClassID{ "LuaSTG.Flux.ResourceTexture" };
 
 		luastg::IResourceTexture* data;
 
@@ -132,14 +132,14 @@ namespace luastg::binding
 			// register
 
 			// 暂时不暴露出创建接口
-			//auto const M = S.push_module("LuaSTG.Sub");
+			//auto const M = S.push_module("LuaSTG.Flux");
 			//S.set_map_value(M, "Texture2D", class_table);
 		}
 	};
 
 	struct ResourceSprite
 	{
-		static constexpr std::string_view const ClassID{ "LuaSTG.Sub.ResourceSprite" };
+		static constexpr std::string_view const ClassID{ "LuaSTG.Flux.ResourceSprite" };
 
 		luastg::IResourceSprite* data;
 
@@ -257,14 +257,14 @@ namespace luastg::binding
 			// register
 
 			// 暂时不暴露出创建接口
-			//auto const M = S.push_module("LuaSTG.Sub");
+			//auto const M = S.push_module("LuaSTG.FLux");
 			//S.set_map_value(M, "Texture2D", class_table);
 		}
 	};
 	
 	struct ResourceSpriteSequence
 	{
-		static constexpr std::string_view const ClassID{ "LuaSTG.Sub.ResourceSpriteSequence" };
+		static constexpr std::string_view const ClassID{ "LuaSTG.Flux.ResourceSpriteSequence" };
 
 		luastg::IResourceAnimation* data;
 
@@ -361,14 +361,14 @@ namespace luastg::binding
 			// register
 
 			// 暂时不暴露出创建接口
-			//auto const M = S.push_module("LuaSTG.Sub");
+			//auto const M = S.push_module("LuaSTG.Flux");
 			//S.set_map_value(M, "Texture2D", class_table);
 		}
 	};
 
 	struct ResourceCollection
 	{
-		static constexpr std::string_view const ClassID{ "LuaSTG.Sub.ResourceCollection" };
+		static constexpr std::string_view const ClassID{ "LuaSTG.Flux.ResourceCollection" };
 
 		luastg::ResourcePool* data;
 
@@ -690,7 +690,7 @@ namespace luastg::binding
 
 	struct ResourceManager
 	{
-		static constexpr std::string_view const ClassID{ "LuaSTG.Sub.ResourceManager" };
+		static constexpr std::string_view const ClassID{ "LuaSTG.Flux.ResourceManager" };
 
 		static int api_getResourceCollection(lua_State* L)
 		{

@@ -50,6 +50,11 @@ void luastg::binding::BuiltInFunction::Register(lua_State* L)noexcept
 			lua_pushstring(L, LUASTG_INFO);
 			return 1;
 		}
+		static int GetBranchName(lua_State* L) noexcept
+		{
+			lua_pushstring(L, LUASTG_BRANCH);
+			return 1;
+		}
 		static int SetWindowed(lua_State* L)noexcept
 		{
 			LAPP.SetWindowed(lua_toboolean(L, 1));
@@ -230,6 +235,7 @@ void luastg::binding::BuiltInFunction::Register(lua_State* L)noexcept
 		#pragma region 框架函数
 		{ "GetVersionNumber", &Wrapper::GetVersionNumber },
 		{ "GetVersionName", &Wrapper::GetVersionName },
+		{ "GetBranchName", &Wrapper::GetBranchName },
 		{ "SetWindowed", &Wrapper::SetWindowed },
 		{ "SetFPS", &Wrapper::SetFPS },
 		{ "GetFPS", &Wrapper::GetFPS },
