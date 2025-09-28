@@ -4,14 +4,19 @@
 #include "LuaBinding/LuaCustomLoader.hpp"
 #include "LuaBinding/LuaWrapper.hpp"
 extern "C" {
-#include "lua_cjson.h"
-#include "lfs.h"
+	#include "lua_cjson.h"
+	#include "lfs.h"
 	extern int luaopen_string_pack(lua_State* L);
 }
 #ifdef LUASTG_LINK_LUASOCKET
 extern "C" {
 	extern int luaopen_mime_core(lua_State* L);
 	extern int luaopen_socket_core(lua_State* L);
+}
+#endif
+#ifdef LUASTG_LINK_LYAML
+extern "C" {
+	extern int luaopen_yaml(lua_State* L);
 }
 #endif
 //#include "lua_xlsx_csv.h"
@@ -309,6 +314,7 @@ namespace luastg
 			luaopen_dwrite(L);
 			luaopen_random(L);
 			luaopen_string_pack(L);
+			luaopen_yaml(L);
 		#ifdef LUASTG_LINK_LUASOCKET
 			{
 				lua_getfield(L, LUA_REGISTRYINDEX, "_LOADED"); // ... _LOADED
@@ -323,6 +329,20 @@ namespace luastg
 				lua_pop(L, 1); // ...
 			}
 		#endif
+		/*
+		#ifdef LUASTG_LINK_LYAML
+			{
+				lua_getfield(L, LUA_REGISTRYINDEX, "_LOADED");
+				{
+					spdlog::info("[luajit] Registering lyaml package");
+
+					luaopen_yaml(L);
+					lua_setfield(L, -2, "yaml");
+				}
+				lua_pop(L, 1);
+			}
+		#endif
+		*/
 			lua_settop(L, 0);
 
 			binding::RegistBuiltInClassWrapper(L);  // 注册内建类 (luastg lib)

@@ -227,6 +227,7 @@ target_link_libraries(LuaSTG PRIVATE
     Core.Clipboard
     Core.Audio
     LuaSTG.InternalLuaScriptsFileSystem
+    lyaml
 )
 if (LUASTG_LINK_YY_THUNKS)
     target_link_libraries(LuaSTG PRIVATE YY_Thunks)
@@ -236,6 +237,11 @@ if (LUASTG_LINK_LUASOCKET)
     target_compile_definitions(LuaSTG PRIVATE LUASTG_LINK_LUASOCKET)
     target_link_libraries(LuaSTG PRIVATE luasocket)
     message(STATUS "[LuaSTG] Link: luasocket")
+endif ()
+if (LUASTG_LINK_LYAML)
+    target_compile_definitions(LuaSTG PRIVATE LUASTG_LINK_LYAML)
+    target_link_libraries(LuaSTG PRIVATE lyaml)
+    message(STATUS "[LuaSTG] Link: lyaml")
 endif ()
 
 add_custom_command(TARGET LuaSTG POST_BUILD
