@@ -146,3 +146,7 @@ add_subdirectory(steam_api)
 
 add_subdirectory(tracy-patch)
 
+# ==================== sqlite3 api ====================
+
+add_subdirectory(lua-sqlite3)
+set_target_properties(lua_sqlite3 PROPERTIES FOLDER lualib)

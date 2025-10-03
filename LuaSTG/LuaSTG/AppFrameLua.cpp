@@ -16,6 +16,7 @@ extern "C" {
 #endif
 //#include "lua_xlsx_csv.h"
 #include "lua_steam.h"
+#include "lua_sqlite3.h"
 #include "LuaBinding/external/lua_xinput.hpp"
 #include "LuaBinding/external/lua_random.hpp"
 #include "LuaBinding/external/lua_dwrite.hpp"
@@ -305,6 +306,7 @@ namespace luastg
 			//lua_xlsx_open(L);
 			//lua_csv_open(L);
 			lua_steam_open(L);
+			luaopen_sqlite3(L);
 			luaopen_xinput(L);
 			luaopen_dwrite(L);
 			luaopen_random(L);

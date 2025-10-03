@@ -227,6 +227,7 @@ target_link_libraries(LuaSTG PRIVATE
     Core.Clipboard
     Core.Audio
     LuaSTG.InternalLuaScriptsFileSystem
+    lua_sqlite3
 )
 if (LUASTG_LINK_YY_THUNKS)
     target_link_libraries(LuaSTG PRIVATE YY_Thunks)
