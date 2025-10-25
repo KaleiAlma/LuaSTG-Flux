@@ -29,27 +29,25 @@ local objects = lstg.ObjTable()
 ---@param group [0, 16]
 ---@param checking_world integer? optional world flag to check.
 function lstg.ObjList(group, checking_world)
-    local mask = checking_world or 15
-
     if group < 0 or group >= 16 then
-        local id = _UpdateListFirst(mask)
+        local id = _UpdateListFirst(checking_world)
         return function()
             if id == 0 then
                 return nil, nil
             else
                 local i, o = id, objects[id]
-                id = _UpdateListNext(id, mask)
+                id = _UpdateListNext(id, checking_world)
                 return i, o
             end
         end
     else
-        local id = _DetectListFirst(group, mask)
+        local id = _DetectListFirst(group, checking_world)
         return function()
             if id == 0 then
                 return nil, nil
             else
                 local i, o = id, objects[id]
-                id = _DetectListNext(group, id, mask)
+                id = _DetectListNext(group, id, checking_world)
                 return i, o
             end
         end
