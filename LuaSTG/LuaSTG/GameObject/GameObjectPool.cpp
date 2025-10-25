@@ -432,11 +432,6 @@ namespace luastg
 		p->id = id;
 		p->unique_id = m_iUid % GameObject::max_unique_id; // GameObject::max_unique_id is reserved
 		m_iUid++;
-	#ifdef USING_MULTI_GAME_WORLD
-		if (m_pCurrentObject) {
-			p->world = m_pCurrentObject->world;
-		}
-	#endif // USING_MULTI_GAME_WORLD
 		m_update_list.add(p);
 		m_render_list.insert(p);
 		m_detect_lists[p->group].add(p);
