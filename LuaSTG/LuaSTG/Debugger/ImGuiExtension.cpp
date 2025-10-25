@@ -604,7 +604,7 @@ namespace {
 				// object
 
 				if (ImGui::CollapsingHeader("GameObject")) {
-					auto obj_info = LAPP.GetGameObjectPool().DebugGetFrameStatistics();
+					auto obj_info = LPOOL.DebugGetFrameStatistics();
 
 					ImGui::Text("Create : %llu", obj_info.object_alloc);
 					ImGui::Text("Return : %llu", obj_info.object_free);

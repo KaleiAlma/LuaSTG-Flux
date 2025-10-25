@@ -29,7 +29,7 @@ void luastg::binding::FileManager::Register(lua_State* L)noexcept {
 
 			core::SmartReference<core::IFileSystemArchive> archive;
 			if (!core::IFileSystemArchive::createFromFile(path, archive.put())) {
-				spdlog::error("[luastg] 无法加载资源包'{}'，文件不存在或不是合法的资源包格式（zip）", path);
+				spdlog::error("[luastg] Unable to load resource pack '{}'; file does not exist or is not a valid resource pack format (zip).", path);
 				ctx.push_value(std::nullopt);
 				return 1;
 			}
