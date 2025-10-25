@@ -972,43 +972,90 @@ namespace luastg::binding {
 			return luaL_error(vm, "invalid parameters");
 		}
 		static int getUpdateListFirst(lua_State* const vm) {
-			if (auto const object = LPOOL.getUpdateListFirst(); object == nullptr) {
+			auto object = LPOOL.getUpdateListFirst();
+
+			#ifdef USING_MULTI_GAME_WORLD
+				bool hasWorldArg = lua_gettop(vm) >= 1;
+				uint32_t worldToCheck = 0;
+				if (hasWorldArg)
+				{
+					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 1));
+					while (object && object->world != worldToCheck)
+						object = LPOOL.getUpdateListNext(object->id);
+				}
+			#endif
+
+			if (object == nullptr)
 				lua_pushinteger(vm, 0);
-			}
-			else {
+			else
 				lua_pushinteger(vm, static_cast<lua_Integer>(object->id + 1));
-			}
 			return 1;
 		}
+
 		static int getUpdateListNext(lua_State* const vm) {
 			auto const id = static_cast<size_t>(luaL_checkinteger(vm, 1));
-			if (auto const object = LPOOL.getUpdateListNext(id - 1); object == nullptr) {
+			auto object = LPOOL.getUpdateListNext(id - 1);
+
+			#ifdef USING_MULTI_GAME_WORLD
+				bool hasWorldArg = lua_gettop(vm) >= 2;
+				uint32_t worldToCheck = 0;
+				if (hasWorldArg)
+				{
+					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 2));
+					while (object && object->world != worldToCheck)
+						object = LPOOL.getUpdateListNext(object->id);
+				}
+			#endif
+
+			if (object == nullptr)
 				lua_pushinteger(vm, 0);
-			}
-			else {
+			else
 				lua_pushinteger(vm, static_cast<lua_Integer>(object->id + 1));
-			}
 			return 1;
 		}
+
 		static int getDetectListFirst(lua_State* const vm) {
 			auto const group = static_cast<size_t>(luaL_checkinteger(vm, 1));
-			if (auto const object = LPOOL.getDetectListFirst(group); object == nullptr) {
+			auto object = LPOOL.getDetectListFirst(group);
+
+			#ifdef USING_MULTI_GAME_WORLD
+				bool hasWorldArg = lua_gettop(vm) >= 2;
+				uint32_t worldToCheck = 0;
+				if (hasWorldArg)
+				{
+					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 2));
+					while (object && object->world != worldToCheck)
+						object = LPOOL.getDetectListNext(group, object->id);
+				}
+			#endif
+
+			if (object == nullptr)
 				lua_pushinteger(vm, 0);
-			}
-			else {
+			else
 				lua_pushinteger(vm, static_cast<lua_Integer>(object->id + 1));
-			}
 			return 1;
 		}
+
 		static int getDetectListNext(lua_State* const vm) {
 			auto const group = static_cast<size_t>(luaL_checkinteger(vm, 1));
 			auto const id = static_cast<size_t>(luaL_checkinteger(vm, 2));
-			if (auto const object = LPOOL.getDetectListNext(group, id - 1); object == nullptr) {
+			auto object = LPOOL.getDetectListNext(group, id - 1);
+
+			#ifdef USING_MULTI_GAME_WORLD
+				bool hasWorldArg = lua_gettop(vm) >= 3;
+				uint32_t worldToCheck = 0;
+				if (hasWorldArg)
+				{
+					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 3));
+					while (object && object->world != worldToCheck)
+						object = LPOOL.getDetectListNext(group, object->id);
+				}
+			#endif
+
+			if (object == nullptr)
 				lua_pushinteger(vm, 0);
-			}
-			else {
+			else
 				lua_pushinteger(vm, static_cast<lua_Integer>(object->id + 1));
-			}
 			return 1;
 		}
 		static int isValid(lua_State* const vm) {

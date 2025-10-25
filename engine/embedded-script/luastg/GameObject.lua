@@ -26,26 +26,30 @@ local _UpdateListNext = lstg._UpdateListNext
 local _DetectListFirst = lstg._DetectListFirst
 local _DetectListNext = lstg._DetectListNext
 local objects = lstg.ObjTable()
-function lstg.ObjList(group)
+---@param group [0, 16]
+---@param checking_world integer? optional world flag to check.
+function lstg.ObjList(group, checking_world)
+    local mask = checking_world or 15
+
     if group < 0 or group >= 16 then
-        local id = _UpdateListFirst()
+        local id = _UpdateListFirst(mask)
         return function()
             if id == 0 then
                 return nil, nil
             else
                 local i, o = id, objects[id]
-                id = _UpdateListNext(id)
+                id = _UpdateListNext(id, mask)
                 return i, o
             end
         end
     else
-        local id = _DetectListFirst(group)
+        local id = _DetectListFirst(group, mask)
         return function()
             if id == 0 then
                 return nil, nil
             else
                 local i, o = id, objects[id]
-                id = _DetectListNext(group, id)
+                id = _DetectListNext(group, id, mask)
                 return i, o
             end
         end
