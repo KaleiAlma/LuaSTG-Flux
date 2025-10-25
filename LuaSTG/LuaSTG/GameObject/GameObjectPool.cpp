@@ -425,6 +425,9 @@ namespace luastg
 		}
 		GameObject* p = m_ObjectPool.object(id);
 		p->Reset();
+		#ifdef USING_MULTI_GAME_WORLD
+			p->world = m_iWorld;
+		#endif
 		p->status = GameObjectStatus::Active;
 		p->id = id;
 		p->unique_id = m_iUid % GameObject::max_unique_id; // GameObject::max_unique_id is reserved
