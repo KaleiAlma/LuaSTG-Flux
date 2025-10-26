@@ -111,6 +111,7 @@ void luastg::binding::Audio::Register(lua_State* L)noexcept
 		static int SetSEVolume(lua_State* L)noexcept
 		{
 			float v = static_cast<float>(luaL_checknumber(L, 1));
+			v = std::clamp(v, 0.0f, 1.0f);
 			LAPP.SetSEVolume(v);
 			return 0;
 		}
@@ -326,12 +327,14 @@ void luastg::binding::Audio::Register(lua_State* L)noexcept
 			if (lua_gettop(L) <= 1)
 			{
 				float x = static_cast<float>(luaL_checknumber(L, 1));
+				x = std::clamp(x, 0.0f, 1.0f);
 				LAPP.SetBGMVolume(x);
 			}
 			else
 			{
 				const char* s = luaL_checkstring(L, 1);
 				float x = static_cast<float>(luaL_checknumber(L, 2));
+				x = std::clamp(x, 0.0f, 1.0f);
 				core::SmartReference<IResourceMusic> p = LRES.FindMusic(s);
 				if (!p)
 					return luaL_error(L, "music '%s' not found.", s);
