@@ -20,13 +20,17 @@ You can also download the bundled library called BerryLib.
 
 > Note: Berrylib contains assets from Ryannlib. All licences of those assets goes to their respective owners.
 
+## Planned features
+
+Here's a list of planned features for the future:
+* Dynamic created object pools.
+* Better ImGui bindings (Image support, ...)
+* Switch to sdl2, miniaudio and other cross-platform features.
+
 ## Requirements
 
 * Operating System: Windows 7 SP1 with platform update ([KB2670838](https://www.microsoft.com/en-us/download/details.aspx?id=36805)) or above
 * Graphics Card: compatible with Direct3D11, Direct3D feature level is D3D_FEATURE_LEVEL_10_0 or above
-* Audio Card: compatible with XAudio2
-* Graphic API: Direct3D 9 to Direct3D 11
-* Audio API: DirectSound to XAudio2
 
 ## Build Projects
 
