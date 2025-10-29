@@ -6,6 +6,7 @@
 #include <memory_resource>
 #include <ranges>
 #include <algorithm>
+#include <tuple>
 
 // 对象池信息
 #define LOBJPOOL_SIZE   32768 // 最大对象数 //32768(full) //16384(half)
@@ -329,8 +330,11 @@ namespace luastg
 			assert(r >= l && t >= b);
 			m_BoundLeft = l;
 			m_BoundRight = r;
-			m_BoundTop = t;
 			m_BoundBottom = b;
+			m_BoundTop = t;
+		}
+		inline std::tuple<double, double, double, double> GetBound() noexcept {
+			return { m_BoundLeft, m_BoundRight, m_BoundTop, m_BoundBottom };
 		}
 
 		inline bool isPointInBound(double const x, double const y) const noexcept {

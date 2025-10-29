@@ -22,6 +22,15 @@ void luastg::binding::GameObjectManager::Register(lua_State* L) noexcept
 			);
 			return 0;
 		}
+		static int GetBound(lua_State* L) noexcept
+		{
+			const auto [l, r, b, t] = LPOOL.GetBound();
+			lua_pushnumber(L, l);
+			lua_pushnumber(L, r);
+			lua_pushnumber(L, b);
+			lua_pushnumber(L, t);
+			return 4;
+		}
 		static int UpdateXY(lua_State* L) noexcept
 		{
 			LPOOL.UpdateXY();
@@ -103,6 +112,7 @@ void luastg::binding::GameObjectManager::Register(lua_State* L) noexcept
 		// 对象管理器
 		{ "GetnObj", &Wrapper::GetnObj },
 		{ "SetBound", &Wrapper::SetBound },
+		{ "GetBound", &Wrapper::GetBound },
 		{ "UpdateXY", &Wrapper::UpdateXY },
 		// EX+
 		{ "GetSuperPause", &Wrapper::GetSuperPause },
