@@ -70,7 +70,7 @@ BEGIN
             VALUE "FileDescription", "LuaSTG Flux"
             VALUE "FileVersion", "0.1.2.0"
             VALUE "InternalName", "LuaSTG Flux"
-            VALUE "LegalCopyright", "Copyright 2025 Rül Hölos"
+            VALUE "LegalCopyright", "Copyright 2025-2025 Rül Hölos"
             VALUE "OriginalFilename", "LuaSTGFlux.exe"
             VALUE "ProductName", "LuaSTG Flux"
             VALUE "ProductVersion", "0.1.2.0"
