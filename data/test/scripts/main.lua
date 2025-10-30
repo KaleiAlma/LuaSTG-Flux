@@ -3,7 +3,7 @@ window = {}
 window.width = 1920
 window.height = 1080
 function window:init()
-    lstg.ChangeVideoMode(self.width, self.height, true, true)
+    lstg.ChangeVideoMode(self.width, self.height, "windowed", true)
 end
 function window:applyCameraV()
     lstg.SetViewport(0, self.width, 0, self.height)
@@ -34,7 +34,7 @@ end
 function window:setSize(width, height)
     window.width = width
     window.height = height
-    lstg.ChangeVideoMode(self.width, self.height, true, true)
+    lstg.ChangeVideoMode(self.width, self.height, "windowed", true)
 end
 
 local imgui = require("imgui")

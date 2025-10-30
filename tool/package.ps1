@@ -1,8 +1,8 @@
-$ProjectRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Join($PSScriptRoot, ".."))
-$ReleasesRoot = [System.IO.Path]::Join($ProjectRoot, "build", "releases")
-$BinaryRootX86 = [System.IO.Path]::Join($ProjectRoot, "build", "x86", "bin")
-$BinaryRootAMD64 = [System.IO.Path]::Join($ProjectRoot, "build", "amd64", "bin")
-$ExampleRoot = [System.IO.Path]::Join($ProjectRoot, "data", "example")
+$ProjectRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, ".."))
+$ReleasesRoot = [System.IO.Path]::Combine($ProjectRoot, "build", "releases")
+$BinaryRootX86 = [System.IO.Path]::Combine($ProjectRoot, "build", "x86", "bin")
+$BinaryRootAMD64 = [System.IO.Path]::Combine($ProjectRoot, "build", "amd64", "bin")
+$ExampleRoot = [System.IO.Path]::Combine($ProjectRoot, "data", "example")
 
 Write-Output "Project Root       : $ProjectRoot"
 Write-Output "Releases Root      : $ReleasesRoot"
@@ -19,11 +19,11 @@ cmake --workflow --preset windows-x86-release
 
 # read version info
 
-$ConfigFilePath = [System.IO.Path]::Join($ProjectRoot, "LuaSTG", "LuaSTG", "LConfig.h")
+$ConfigFilePath = [System.IO.Path]::Combine($ProjectRoot, "LuaSTG", "LuaSTG", "LConfig.h")
 $ConfigFile = [System.IO.File]::ReadAllText($ConfigFilePath, [System.Text.Encoding]::UTF8)
 $VersionMajor = "0"
-$VersionMinor = "0"
-$VersionPatch = "0"
+$VersionMinor = "1"
+$VersionPatch = "2"
 foreach ($Line in $ConfigFile.Split("`n")) {
     if ($Line.Contains("LUASTG_VERSION_MAJOR")) {
         $VersionMajor = $Line.Replace("#define", "").Replace("LUASTG_VERSION_MAJOR", "").Trim()
@@ -36,7 +36,7 @@ foreach ($Line in $ConfigFile.Split("`n")) {
     }
 }
 $VersionFull = "$VersionMajor.$VersionMinor.$VersionPatch"
-$ReleaseRoot = [System.IO.Path]::Join($ReleasesRoot, "LuaSTG-Flux-v$VersionFull")
+$ReleaseRoot = [System.IO.Path]::Combine($ReleasesRoot, "LuaSTG-Flux-v$VersionFull")
 
 Write-Output "Version            : $VersionFull"
 Write-Output "Release Root       : $ReleaseRoot"
@@ -49,16 +49,16 @@ if (-not [System.IO.Directory]::Exists($ReleaseRoot)) {
 
 $BinaryFilesAMD64 = @(
     @{
-        Source = [System.IO.Path]::Join($BinaryRootAMD64, "LuaSTGFlux.exe")
-        Destination = [System.IO.Path]::Join($ReleaseRoot, "LuaSTGFlux.exe")
+        Source = [System.IO.Path]::Combine($BinaryRootAMD64, "LuaSTGFlux.exe")
+        Destination = [System.IO.Path]::Combine($ReleaseRoot, "LuaSTGFlux.exe")
     },
     @{
-        Source = [System.IO.Path]::Join($BinaryRootAMD64, "d3dcompiler_47.dll")
-        Destination = [System.IO.Path]::Join($ReleaseRoot, "d3dcompiler_47.dll")
+        Source = [System.IO.Path]::Combine($BinaryRootAMD64, "d3dcompiler_47.dll")
+        Destination = [System.IO.Path]::Combine($ReleaseRoot, "d3dcompiler_47.dll")
     },
     @{
-        Source = [System.IO.Path]::Join($BinaryRootAMD64, "xaudio2_9redist.dll")
-        Destination = [System.IO.Path]::Join($ReleaseRoot, "xaudio2_9redist.dll")
+        Source = [System.IO.Path]::Combine($BinaryRootAMD64, "xaudio2_9redist.dll")
+        Destination = [System.IO.Path]::Combine($ReleaseRoot, "xaudio2_9redist.dll")
     }
 )
 
@@ -69,19 +69,19 @@ foreach ($BinaryFile in $BinaryFilesAMD64) {
     Copy-Item -Path $BinaryFile.Source -Destination $BinaryFile.Destination
 }
 
-$Release32Root = [System.IO.Path]::Join($ReleaseRoot, "windows-32bit")
+$Release32Root = [System.IO.Path]::Combine($ReleaseRoot, "windows-32bit")
 $BinaryFilesX86 = @(
     @{
-        Source = [System.IO.Path]::Join($BinaryRootX86, "LuaSTGFlux.exe")
-        Destination = [System.IO.Path]::Join($Release32Root, "LuaSTGFlux.exe")
+        Source = [System.IO.Path]::Combine($BinaryRootX86, "LuaSTGFlux.exe")
+        Destination = [System.IO.Path]::Combine($Release32Root, "LuaSTGFlux.exe")
     },
     @{
-        Source = [System.IO.Path]::Join($BinaryRootX86, "d3dcompiler_47.dll")
-        Destination = [System.IO.Path]::Join($Release32Root, "d3dcompiler_47.dll")
+        Source = [System.IO.Path]::Combine($BinaryRootX86, "d3dcompiler_47.dll")
+        Destination = [System.IO.Path]::Combine($Release32Root, "d3dcompiler_47.dll")
     },
     @{
-        Source = [System.IO.Path]::Join($BinaryRootX86, "xaudio2_9redist.dll")
-        Destination = [System.IO.Path]::Join($Release32Root, "xaudio2_9redist.dll")
+        Source = [System.IO.Path]::Combine($BinaryRootX86, "xaudio2_9redist.dll")
+        Destination = [System.IO.Path]::Combine($Release32Root, "xaudio2_9redist.dll")
     }
 )
 
@@ -98,14 +98,14 @@ foreach ($BinaryFile in $BinaryFilesX86) {
 
 # copy example file
 
-$ExampleAssets = [System.IO.Path]::Join($ExampleRoot, "assets")
-$ReleaseAssets = [System.IO.Path]::Join($ReleaseRoot, "assets")
-$ExampleScripts = [System.IO.Path]::Join($ExampleRoot, "scripts")
-$ReleaseScripts = [System.IO.Path]::Join($ReleaseRoot, "scripts")
-$DocRoot = [System.IO.Path]::Join($ProjectRoot, "doc")
-$ReleaseDocRoot = [System.IO.Path]::Join($ReleaseRoot, "doc")
-$LicenseRoot = [System.IO.Path]::Join($ProjectRoot, "data", "license")
-$ReleaseLicenseRoot = [System.IO.Path]::Join($ReleaseRoot, "license")
+$ExampleAssets = [System.IO.Path]::Combine($ExampleRoot, "assets")
+$ReleaseAssets = [System.IO.Path]::Combine($ReleaseRoot, "assets")
+$ExampleScripts = [System.IO.Path]::Combine($ExampleRoot, "scripts")
+$ReleaseScripts = [System.IO.Path]::Combine($ReleaseRoot, "scripts")
+$DocRoot = [System.IO.Path]::Combine($ProjectRoot, "doc")
+$ReleaseDocRoot = [System.IO.Path]::Combine($ReleaseRoot, "doc")
+$LicenseRoot = [System.IO.Path]::Combine($ProjectRoot, "data", "license")
+$ReleaseLicenseRoot = [System.IO.Path]::Combine($ReleaseRoot, "license")
 
 if (Test-Path -Path $ReleaseAssets) {
     Remove-Item -Path $ReleaseAssets -Recurse
@@ -123,10 +123,9 @@ Copy-Item -Path $ExampleAssets -Destination $ReleaseAssets -Recurse
 Copy-Item -Path $ExampleScripts -Destination $ReleaseScripts -Recurse
 Copy-Item -Path $DocRoot -Destination $ReleaseDocRoot -Recurse -Exclude ".git"
 Copy-Item -Path $LicenseRoot -Destination $ReleaseLicenseRoot -Recurse
-[System.IO.File]::Copy([System.IO.Path]::Join($ExampleRoot, "config.json"), [System.IO.Path]::Join($ReleaseRoot, "config.json"), $true)
-[System.IO.File]::Copy([System.IO.Path]::Join($ExampleRoot, "使用说明.txt"), [System.IO.Path]::Join($ReleaseRoot, "使用说明.txt"), $true)
+[System.IO.File]::Copy([System.IO.Path]::Combine($ExampleRoot, "config.json"), [System.IO.Path]::Combine($ReleaseRoot, "config.json"), $true)
 
 # archive
 
-$ArchivePath = [System.IO.Path]::Join($ReleasesRoot, "LuaSTG-Flux-v$VersionFull.zip")
+$ArchivePath = [System.IO.Path]::Combine($ReleasesRoot, "LuaSTG-Flux-v$VersionFull.zip")
 Compress-Archive -Path $ReleaseRoot -DestinationPath $ArchivePath -CompressionLevel Optimal -Force

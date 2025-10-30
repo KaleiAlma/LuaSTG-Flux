@@ -111,12 +111,14 @@ local function buildGameObjectScene()
     lstg.ResetPool()
     lstg.New(player_class)
     global_tasks:add(function()
+        local j = 0
         while true do
             local x, y = window.width / 2, window.height / 2
             for i = 0, 239 do
-                createBullet(x, y, (i / 240) * 360, 3)
+                createBullet(x, y, (i / 240) * 360 - j, 3)
             end
             task.wait(4)
+            j = j + 0.3
         end
     end)
 end
@@ -154,7 +156,7 @@ local function renderText(font, text, x, y, scale, color, oscale, ocolor, align)
 end
 local function renderBackground()
     local cx, cy = window.width / 2, window.height / 2
-    renderText("Sans", "海内存知己\n天涯若比邻\n欢迎来到 LuaSTG Sub",
+    renderText("Sans", "Welcome to\nLuaSTG-Flux",
         cx, cy,
         1, lstg.Color(255, 2255, 255, 255),
         4, lstg.Color(255, 0, 0, 0),
@@ -165,11 +167,12 @@ local function renderBackground()
         local cosv, sinv = math.cos(math.rad(angle)), math.sin(math.rad(angle))
         local hscale = 16 + 15 * math.sin(math.rad(i * 11 + timer * 0.11))
         local cr = circle_r + hscale * 8
+        lstg.SetImageState("black-rect", "", lstg.Color(255, 0, 0, 0))
         lstg.Render("black-rect", cx + cr * cosv, cy + cr * sinv, angle, hscale, 1)
     end
 end
 local function drawDebugInfo()
-    renderText("Sans", "移动/Move: ←↑↓→  低速移动/Slower Move: LeftShift",
+    renderText("Sans", "Move: ←↑↓→ | Slower Move: LeftShift",
         4, 4,
         0.5, lstg.Color(255, 2255, 255, 255),
         2, lstg.Color(255, 0, 0, 0),
@@ -186,7 +189,7 @@ end
 --- framework
 
 function GameInit()
-    lstg.ChangeVideoMode(window.width, window.height, true, false)
+    lstg.SetResolution(window.width, window.height)
     applyCamera()
     lstg.LoadTexture("white", "assets/texture/white.png", false)
     lstg.LoadImage("white", "white", 0, 0, 16, 16)
@@ -195,7 +198,7 @@ function GameInit()
     lstg.LoadImage("player-rect", "white", 0, 0, 16, 16)
     lstg.SetImageState("player-rect", "", lstg.Color(255, 64, 64, 255))
     lstg.LoadImage("bullet-rect", "white", 0, 0, 16, 16)
-    lstg.SetImageState("bullet-rect", "", lstg.Color(96, 0, 0, 0))
+    lstg.SetImageState("bullet-rect", "", lstg.Color(128, 255, 255, 255))
     if not lstg.LoadTTF("Sans", "C:/Windows/Fonts/msyh.ttc", 48, 48) then
         lstg.LoadTTF("Sans", "C:/Windows/Fonts/msyh.ttf", 48, 48) -- Windows 7
     end
@@ -215,7 +218,7 @@ function FrameFunc()
 end
 function RenderFunc()
     lstg.BeginScene()
-    lstg.RenderClear(lstg.Color(255, 255, 255, 255))
+    lstg.RenderClear(lstg.Color(255, 0, 0, 0))
     applyCamera()
     renderGameObject()
     renderBackground()
