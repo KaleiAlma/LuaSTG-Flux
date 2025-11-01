@@ -142,7 +142,7 @@ namespace luastg {
 		last_xy_touched = false;
 
 	#ifdef USING_MULTI_GAME_WORLD
-		world = 15;
+		world = 0xFFFF;
 	#endif // USING_MULTI_GAME_WORLD
 
 		rect = false;
@@ -185,7 +185,7 @@ namespace luastg {
 		last_xy_touched = false;
 
 	#ifdef USING_MULTI_GAME_WORLD
-		world = 15;
+		world = 0xFFFF;
 	#endif // USING_MULTI_GAME_WORLD
 
 		rect = false;

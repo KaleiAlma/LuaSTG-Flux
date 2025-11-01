@@ -976,7 +976,7 @@ namespace luastg::binding {
 
 			#ifdef USING_MULTI_GAME_WORLD
 				bool hasWorldArg = lua_gettop(vm) >= 1;
-				uint32_t worldToCheck = 0;
+				uint64_t worldToCheck = 0;
 				if (hasWorldArg)
 				{
 					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 1));
@@ -998,10 +998,10 @@ namespace luastg::binding {
 
 			#ifdef USING_MULTI_GAME_WORLD
 				bool hasWorldArg = lua_gettop(vm) >= 2;
-				uint32_t worldToCheck = 0;
+				uint64_t worldToCheck = 0;
 				if (hasWorldArg)
 				{
-					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 2));
+					worldToCheck = static_cast<uint64_t>(luaL_checkinteger(vm, 2));
 					while (object && object->world != worldToCheck)
 						object = LPOOL.getUpdateListNext(object->id);
 				}
@@ -1020,10 +1020,10 @@ namespace luastg::binding {
 
 			#ifdef USING_MULTI_GAME_WORLD
 				bool hasWorldArg = lua_gettop(vm) >= 2;
-				uint32_t worldToCheck = 0;
+				uint64_t worldToCheck = 0;
 				if (hasWorldArg)
 				{
-					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 2));
+					worldToCheck = static_cast<uint64_t>(luaL_checkinteger(vm, 2));
 					while (object && object->world != worldToCheck)
 						object = LPOOL.getDetectListNext(group, object->id);
 				}
@@ -1043,10 +1043,10 @@ namespace luastg::binding {
 
 			#ifdef USING_MULTI_GAME_WORLD
 				bool hasWorldArg = lua_gettop(vm) >= 3;
-				uint32_t worldToCheck = 0;
+				uint64_t worldToCheck = 0;
 				if (hasWorldArg)
 				{
-					worldToCheck = static_cast<uint32_t>(luaL_checkinteger(vm, 3));
+					worldToCheck = static_cast<uint64_t>(luaL_checkinteger(vm, 3));
 					while (object && object->world != worldToCheck)
 						object = LPOOL.getDetectListNext(group, object->id);
 				}

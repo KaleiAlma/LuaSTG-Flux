@@ -3,6 +3,7 @@
 #include "LuaBinding/modern/GameObject.hpp"
 #include "lua/plus.hpp"
 #include "AppFrame.h"
+#include "iostream"
 
 using std::string_view_literals::operator ""sv;
 
@@ -80,8 +81,8 @@ namespace luastg
 		m_ObjectPool.clear();
 		// 重置其他数据
 #ifdef USING_MULTI_GAME_WORLD
-		m_iWorld = 15;
-		m_Worlds = { 15, 0, 0, 0 };
+		m_iWorld = 0x00000001;
+		m_ActiveWorldMask = 0xFFFFFFFF;
 		m_pCurrentObject = nullptr;
 #endif // USING_MULTI_GAME_WORLD
 		m_LockObjectA = nullptr;
@@ -147,12 +148,19 @@ namespace luastg
 		dispatchOnBeforeBatchRender();
 #ifdef USING_MULTI_GAME_WORLD
 		m_pCurrentObject = nullptr;
-		auto const world = GetWorldFlag();
+		int64_t const world = GetWorldFlag();
 #endif // USING_MULTI_GAME_WORLD
 
 		for (auto& p : m_render_list) {
 #ifdef USING_MULTI_GAME_WORLD
-			if (!p->hide && CheckWorld(p->world, world)) { // 只渲染可见对象
+			if (p->group == 0)
+			{
+				spdlog::warn(p->hide);
+				spdlog::warn(p->world);
+				spdlog::warn(world);
+				spdlog::warn(CheckWorlds(p->world, world));
+			}
+			if (!p->hide && CheckWorlds(p->world, world)) { // 只渲染可见对象
 				m_pCurrentObject = p;
 #else // USING_MULTI_GAME_WORLD
 			if (!p->hide) {  // 只渲染可见对象
@@ -228,7 +236,7 @@ namespace luastg
 
 		for (auto p = m_update_list.first(); p != nullptr; p = p->update_list_next) {
 #ifdef USING_MULTI_GAME_WORLD
-			if (!CheckWorld(p->world, world)) {
+			if (!CheckWorlds(p->world, world)) {
 				continue;
 			}
 #endif // USING_MULTI_GAME_WORLD
@@ -268,7 +276,7 @@ namespace luastg
 
 		for (auto p = m_update_list.first(); p != nullptr; p = p->update_list_next) {
 #ifdef USING_MULTI_GAME_WORLD
-			if (!CheckWorld(p->world, world)) {
+			if (!CheckWorlds(p->world, world)) {
 				continue;
 			}
 #endif // USING_MULTI_GAME_WORLD
@@ -508,7 +516,7 @@ namespace luastg
 #endif // USING_MULTI_GAME_WORLD
 		for (auto p = m_detect_lists[groupId].first(); p != nullptr; p = p->update_list_next) {
 #ifdef USING_MULTI_GAME_WORLD
-			if (p->colli && CheckWorld(p->world, world))
+			if (p->colli && CheckWorlds(p->world, world))
 #else // !USING_MULTI_GAME_WORLD
 			if (p->colli)
 #endif // USING_MULTI_GAME_WORLD

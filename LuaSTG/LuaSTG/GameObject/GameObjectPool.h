@@ -405,37 +405,35 @@ namespace luastg
 	private:
 		// 用于多world
 
-		int32_t m_iWorld = 15; // 当前的 world mask
-		std::array<int32_t, 4> m_Worlds = { 15, 0, 0, 0 }; // 预置的 world mask
+		int64_t m_iWorld = 0x00000001;
+		int64_t m_ActiveWorldMask = 0xFFFFFFFF;
 	public:
-		// 用于多world
+		// Setters and Getters for world masks
 
-		// 设置当前的world mask
-		void SetWorldFlag(int32_t const world) noexcept {
-			m_iWorld = world;
+		void SetWorldFlag(int64_t const worldMask) noexcept {
+			m_iWorld = worldMask;
 		}
-		// 获取当前的world mask
-		int32_t GetWorldFlag() const noexcept {
+		
+		_NODISCARD int64_t GetWorldFlag() const noexcept {
 			return m_iWorld;
 		}
-		// 设置预置的world mask
-		void ActiveWorlds(int32_t const a, int32_t const b, int32_t const c, int32_t const d) noexcept {
-			m_Worlds[0] = a;
-			m_Worlds[1] = b;
-			m_Worlds[2] = c;
-			m_Worlds[3] = d;
+
+		void SetActiveWorlds(int64_t const activeMask) noexcept {
+			m_ActiveWorldMask = activeMask;
 		}
-		// 检查两个world mask位与或的结果 //静态函数，不应该只用于类内
-		static inline bool CheckWorld(int32_t const gameworld, int32_t const objworld) {
-			return (gameworld == objworld) || (gameworld & objworld);
+
+		_NODISCARD int64_t GetActiveWorlds() const noexcept {
+			return m_ActiveWorldMask;
 		}
-		// 对两个world mask，分别与预置的world mask位与或，用于检查是否在同一个world内
-		bool CheckWorlds(int32_t const a, int32_t const b) const noexcept {
-			if (CheckWorld(a, m_Worlds[0]) && CheckWorld(b, m_Worlds[0])) return true;
-			if (CheckWorld(a, m_Worlds[1]) && CheckWorld(b, m_Worlds[1])) return true;
-			if (CheckWorld(a, m_Worlds[2]) && CheckWorld(b, m_Worlds[2])) return true;
-			if (CheckWorld(a, m_Worlds[3]) && CheckWorld(b, m_Worlds[3])) return true;
-			return false;
+
+		// World Checks
+		
+		_NODISCARD static inline bool CheckWorlds(uint64_t a, uint64_t b, uint64_t activeMask = 0xFFFFFFFF) noexcept {
+			return a & b & activeMask;
+		}
+
+		_NODISCARD bool IsSameWorld(int64_t otherMask) const noexcept {
+			return CheckWorlds(m_iWorld, otherMask, m_ActiveWorldMask);
 		}
 #endif // USING_MULTI_GAME_WORLD
 

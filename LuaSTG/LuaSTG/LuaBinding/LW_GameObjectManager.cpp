@@ -74,24 +74,20 @@ void luastg::binding::GameObjectManager::Register(lua_State* L) noexcept
 		{
 			int a = luaL_checkinteger(L, 1);
 			int b = luaL_checkinteger(L, 2);
-			lua_pushboolean(L, GameObjectPool::CheckWorld(a, b));
+			lua_pushboolean(L, GameObjectPool::CheckWorlds(a, b));
 			return 1;
 		}
-		static int CheckWorlds(lua_State* L) noexcept
+		static int SetActiveWorlds(lua_State* L) noexcept
 		{
-			int a1 = luaL_checkinteger(L, 1);
-			int a2 = luaL_checkinteger(L, 2);
-			lua_pushboolean(L, LPOOL.CheckWorlds(a1, a2));
-			return 1;
-		}
-		static int ActiveWorlds(lua_State* L) noexcept
-		{
-			int a1 = luaL_optinteger(L, 1, 0);
-			int a2 = luaL_optinteger(L, 2, 0);
-			int a3 = luaL_optinteger(L, 3, 0);
-			int a4 = luaL_optinteger(L, 4, 0);
-			LPOOL.ActiveWorlds(a1, a2, a3, a4);
+			int mask = luaL_optinteger(L, 1, 0);
+			LPOOL.SetActiveWorlds(mask);
 			return 0;
+		}
+		static int GetActiveWorlds(lua_State* L) noexcept
+		{
+			int32_t mask = LPOOL.GetActiveWorlds();
+			lua_pushnumber(L, mask);
+			return 1;
 		}
 		// EX+
 		static int GetCurrentObject(lua_State* L) noexcept
@@ -122,9 +118,9 @@ void luastg::binding::GameObjectManager::Register(lua_State* L) noexcept
 #ifdef USING_MULTI_GAME_WORLD
 		{ "GetWorldFlag", &Wrapper::GetWorldFlag },
 		{ "SetWorldFlag", &Wrapper::SetWorldFlag },
-		{ "IsInWorld", &Wrapper::IsSameWorld },
-		{ "IsSameWorld", &Wrapper::CheckWorlds },
-		{ "ActiveWorlds", &Wrapper::ActiveWorlds },
+		{ "IsSameWorld", &Wrapper::IsSameWorld },
+		{ "SetActiveWorlds", &Wrapper::SetActiveWorlds },
+		{ "GetActiveWorlds", &Wrapper::GetActiveWorlds },
 		{ "GetCurrentObject", &Wrapper::GetCurrentObject },
 #endif // USING_MULTI_GAME_WORLD
 		{ NULL, NULL },
