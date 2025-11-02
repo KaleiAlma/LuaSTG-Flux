@@ -87,3 +87,11 @@ function lstg.Angle(a, b, c, d)
     local dx, dy = _dxdy(a, b, c, d)
     return _atan2(dy, dx)
 end
+local apiIsSameWorld = lstg.IsSameWorld
+function lstg.IsSameWorld(a, b)
+    if type(a) == "number" and type(b) == "number" then
+        apiIsSameWorld(a, b)
+    else
+        apiIsSameWorld(a.world, b.world)
+    end
+end

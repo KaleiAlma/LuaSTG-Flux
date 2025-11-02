@@ -148,18 +148,11 @@ namespace luastg
 		dispatchOnBeforeBatchRender();
 #ifdef USING_MULTI_GAME_WORLD
 		m_pCurrentObject = nullptr;
-		int64_t const world = GetWorldFlag();
+		auto const world = GetWorldFlag();
 #endif // USING_MULTI_GAME_WORLD
 
 		for (auto& p : m_render_list) {
 #ifdef USING_MULTI_GAME_WORLD
-			if (p->group == 0)
-			{
-				spdlog::warn(p->hide);
-				spdlog::warn(p->world);
-				spdlog::warn(world);
-				spdlog::warn(CheckWorlds(p->world, world));
-			}
 			if (!p->hide && CheckWorlds(p->world, world)) { // 只渲染可见对象
 				m_pCurrentObject = p;
 #else // USING_MULTI_GAME_WORLD
