@@ -242,7 +242,6 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 		}
 		static int LoadTTF(lua_State* L) noexcept
 		{
-			spdlog::error("Calling LoadTTF binding");
 			ResourcePool* pActivedPool = LRES.GetActivedPool();
 			if (!pActivedPool) {
 				return luaL_error(L, "can't load resource at this time.");
