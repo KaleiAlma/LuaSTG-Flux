@@ -15,7 +15,7 @@ namespace luastg
 {
     class ResourceMgr;
     
-    // 资源池类型
+    // Hardcoded pools: Backwards compat with THlib.
     enum class ResourcePoolType
     {
         None = 0,
@@ -75,6 +75,7 @@ namespace luastg
     private:
         ResourceMgr* m_pMgr;
         ResourcePoolType m_iType;
+        std::string m_name;
         std::pmr::unsynchronized_pool_resource m_memory_resource;
         dictionary_t<core::SmartReference<IResourceTexture>> m_TexturePool;
         dictionary_t<core::SmartReference<IResourceSprite>> m_SpritePool;
@@ -143,9 +144,11 @@ namespace luastg
         core::SmartReference<IResourcePostEffectShader> GetFX(std::string_view name) noexcept;
         core::SmartReference<IResourceModel> GetModel(std::string_view name) noexcept;
     public:
-        ResourcePool(ResourceMgr* mgr, ResourcePoolType t);
+        ResourcePool(ResourceMgr* mgr, ResourcePoolType t, std::string_view name = {});
         ResourcePool& operator=(const ResourcePool&) = delete;
         ResourcePool(const ResourcePool&) = delete;
+
+        std::string_view GetName() const noexcept { return m_name; }
     };
     
     // 资源管理器
@@ -155,12 +158,22 @@ namespace luastg
         ResourcePoolType m_ActivedPool = ResourcePoolType::Global;
         ResourcePool m_GlobalResourcePool;
         ResourcePool m_StageResourcePool;
+
+        std::unordered_map<std::string, std::unique_ptr<ResourcePool>> m_CustomPools;
+        ResourcePool* m_pActiveCustomPool = nullptr;
+        std::string m_ActiveCustomPoolName;
     public:
         ResourcePoolType GetActivedPoolType() noexcept;
         void SetActivedPoolType(ResourcePoolType t) noexcept;
         ResourcePool* GetActivedPool() noexcept;
         ResourcePool* GetResourcePool(ResourcePoolType t) noexcept;
         void ClearAllResource() noexcept;
+
+        bool CreatePool(std::string_view name);
+        bool RemovePool(std::string_view name);
+        ResourcePool* GetPool(std::string_view name) noexcept; // "global"/"stage" reserved.
+        bool SetActivedPoolByName(std::string_view name) noexcept;
+        std::string GetActivedPoolName() const noexcept { return m_ActiveCustomPoolName; }
 
         core::SmartReference<IResourceTexture> FindTexture(const char* name) noexcept;
         core::SmartReference<IResourceSprite> FindSprite(const char* name) noexcept;
@@ -187,5 +200,7 @@ namespace luastg
         void ShowResourceManagerDebugWindow(bool* p_open = nullptr);
     public:
         ResourceMgr();
+
+        std::vector<std::string> EnumPools() const noexcept;
     };
 }

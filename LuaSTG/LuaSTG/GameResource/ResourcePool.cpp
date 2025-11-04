@@ -951,9 +951,14 @@ namespace luastg
         return findResource(m_ModelPool, name);
 	}
 
-    ResourcePool::ResourcePool(ResourceMgr* mgr, ResourcePoolType t)
+    ResourcePool::ResourcePool(ResourceMgr* mgr, ResourcePoolType t, std::string_view name)
         : m_pMgr(mgr)
         , m_iType(t)
+        , m_name(name.empty()
+			? (t == ResourcePoolType::Global ? "global"
+			: (t == ResourcePoolType::Stage ? "stage" : ""))
+			: std::string(name))
+        , m_memory_resource()
         , m_TexturePool(&m_memory_resource)
         , m_SpritePool(&m_memory_resource)
         , m_AnimationPool(&m_memory_resource)

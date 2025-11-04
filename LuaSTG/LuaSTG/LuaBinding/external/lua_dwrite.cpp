@@ -2562,13 +2562,9 @@ namespace DirectWrite
 
 		// pre check
 
-		luastg::ResourcePool* pool{};
-		if (pool_type == "global")
-			pool = LRES.GetResourcePool(luastg::ResourcePoolType::Global);
-		else if (pool_type == "stage")
-			pool = LRES.GetResourcePool(luastg::ResourcePoolType::Stage);
-		else
-			return luaL_error(L, "invalid resource pool type");
+		luastg::ResourcePool* pool = LRES.GetPool(pool_type);
+		if (!pool)
+			return luaL_error(L, "invalid resource pool '%s'", pool_type.data());
 		if (pool->GetTexture(texture_name.data()))
 			return luaL_error(L, "texture '%s' already exists", texture_name.data());
 

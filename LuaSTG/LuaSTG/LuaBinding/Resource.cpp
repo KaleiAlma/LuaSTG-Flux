@@ -697,45 +697,26 @@ namespace luastg::binding
 			lua::stack_t S(L);
 			auto const name = S.get_value<std::string_view>(1);
 			auto* set = ResourceCollection::create(L);
-			if (name == "global") {
-				set->data = LRES.GetResourcePool(luastg::ResourcePoolType::Global);
-			}
-			else if (name == "stage") {
-				set->data = LRES.GetResourcePool(luastg::ResourcePoolType::Stage);
-			}
-			else {
+			
+			auto* pool = LRES.GetPool(name);
+			if (!pool)
 				return luaL_error(L, "resource set '%s' not found", name.data());
-			}
+			set->data = pool;
 			return 1;
 		}
 		static int api_setCurrentResourceCollection(lua_State* L)
 		{
 			lua::stack_t S(L);
 			auto const name = S.get_value<std::string_view>(1);
-			if (name == "global") {
-				LRES.SetActivedPoolType(luastg::ResourcePoolType::Global);
-			}
-			else if (name == "stage") {
-				LRES.SetActivedPoolType(luastg::ResourcePoolType::Stage);
-			}
-			else {
+			if (!LRES.SetActivedPoolByName(name))
 				return luaL_error(L, "resource set '%s' not found", name.data());
-			}
 			return 0;
 		}
 		static int api_getCurrentResourceCollection(lua_State* L)
 		{
 			lua::stack_t S(L);
 			auto const type = LRES.GetActivedPoolType();
-			if (luastg::ResourcePoolType::Global == type) {
-				S.push_value<std::string_view>("global");
-			}
-			else if (luastg::ResourcePoolType::Stage == type) {
-				S.push_value<std::string_view>("stage");
-			}
-			else if (luastg::ResourcePoolType::None == type) {
-				S.push_value<std::string_view>("none");
-			}
+			S.push_value(LRES.GetActivedPoolName());
 			return 1;
 		}
 

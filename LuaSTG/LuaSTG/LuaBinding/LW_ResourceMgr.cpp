@@ -13,31 +13,13 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 		static int SetResourceStatus(lua_State* L) noexcept
 		{
 			const char* s = luaL_checkstring(L, 1);
-			if (strcmp(s, "global") == 0)
-				LRES.SetActivedPoolType(ResourcePoolType::Global);
-			else if (strcmp(s, "stage") == 0)
-				LRES.SetActivedPoolType(ResourcePoolType::Stage);
-			else if (strcmp(s, "none") == 0)
-				LRES.SetActivedPoolType(ResourcePoolType::None);
-			else
-				return luaL_error(L, "invalid argument #1 for 'SetResourceStatus', requires 'stage', 'global' or 'none'.");
+			if (!LRES.SetActivedPoolByName(s))
+				return luaL_error(L, "invalid argument #1 for 'SetResourceStatuc', pool '%s' not found", s);
 			return 0;
 		}
 		static int GetResourceStatus(lua_State* L) noexcept
 		{
-			switch (LRES.GetActivedPoolType()) {
-			case ResourcePoolType::Global:
-				lua_pushstring(L, "global");
-				break;
-			case ResourcePoolType::Stage:
-				lua_pushstring(L, "stage");
-				break;
-			case ResourcePoolType::None:
-				lua_pushstring(L, "none");
-				break;
-			default:
-				return luaL_error(L, "can't get resource pool status at this time.");
-			}
+			lua_pushstring(L, LRES.GetActivedPoolName().c_str());
 			return 1;
 		}
 		static int LoadTexture(lua_State* L) noexcept
@@ -454,70 +436,60 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 		}
 		static int RemoveResource(lua_State* L) noexcept
 		{
-			ResourcePoolType t;
 			const char* s = luaL_checkstring(L, 1);
-			if (strcmp(s, "global") == 0)
-				t = ResourcePoolType::Global;
-			else if (strcmp(s, "stage") == 0)
-				t = ResourcePoolType::Stage;
-			else if (strcmp(s, "none") != 0)
-				t = ResourcePoolType::None;
-			else
-				return luaL_error(L, "invalid argument #1 for 'RemoveResource', requires 'stage', 'global' or 'none'.");
-
+			if (strcmp(s, "none") == 0)
+				return 0; // Not a real pool but just in case.
+			
+			ResourcePool* pool = LRES.GetPool(s);
+			if (!pool)
+				return luaL_error(L, "invalid argument # for 'RemoveResource', pool '%s' not found", s);
+			
 			if (lua_gettop(L) == 1)
 			{
-				switch (t)
-				{
-				case ResourcePoolType::Stage:
-					LRES.GetResourcePool(ResourcePoolType::Stage)->Clear();
-					break;
-				case ResourcePoolType::Global:
-					LRES.GetResourcePool(ResourcePoolType::Global)->Clear();
-					break;
-				default:
-					break;
-				}
+				pool->Clear();
 			}
 			else
 			{
 				ResourceType tResourceType = static_cast<ResourceType>(luaL_checkint(L, 2));
 				const char* tResourceName = luaL_checkstring(L, 3);
-
-				switch (t)
-				{
-				case ResourcePoolType::Stage:
-					LRES.GetResourcePool(ResourcePoolType::Stage)->RemoveResource(tResourceType, tResourceName);
-					break;
-				case ResourcePoolType::Global:
-					LRES.GetResourcePool(ResourcePoolType::Global)->RemoveResource(tResourceType, tResourceName);
-					break;
-				default:
-					break;
-				}
+				pool->RemoveResource(tResourceType, tResourceName);
 			}
-			
+
 			return 0;
 		}
 		static int CheckRes(lua_State* L) noexcept
 		{
 			ResourceType tResourceType = static_cast<ResourceType>(luaL_checkint(L, 1));
 			const char* tResourceName = luaL_checkstring(L, 2);
-			// 先在全局池中寻找再到关卡池中找
-			if (LRES.GetResourcePool(ResourcePoolType::Global)->CheckResourceExists(tResourceType, tResourceName))
-				lua_pushstring(L, "global");
-			else if (LRES.GetResourcePool(ResourcePoolType::Stage)->CheckResourceExists(tResourceType, tResourceName))
-				lua_pushstring(L, "stage");
-			else
-				lua_pushnil(L);
+
+			auto pools = LRES.EnumPools();
+			for (auto const& pname : pools)
+			{
+				ResourcePool* p = LRES.GetPool(pname);
+				if (p && p->CheckResourceExists(tResourceType, tResourceName))
+				{
+					lua_pushstring(L, pname.c_str());
+					return 1;
+				}
+			}
+			lua_pushnil(L);
 			return 1;
 		}
 		static int EnumRes(lua_State* L) noexcept
 		{
 			ResourceType tResourceType = static_cast<ResourceType>(luaL_checkint(L, 1));
-			LRES.GetResourcePool(ResourcePoolType::Global)->ExportResourceList(L, tResourceType);
-			LRES.GetResourcePool(ResourcePoolType::Stage)->ExportResourceList(L, tResourceType);
-			return 2;
+			auto pools = LRES.EnumPools();
+			int pushed = 0;
+			for (auto const& pname : pools)
+			{
+				ResourcePool* p = LRES.GetPool(pname);
+				if (p)
+				{
+					p->ExportResourceList(L, tResourceType);
+					++pushed;
+				}
+			}
+			return pushed;
 		}
 
 		static int SetImageScale(lua_State* L) noexcept

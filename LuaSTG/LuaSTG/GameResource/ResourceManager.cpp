@@ -8,6 +8,88 @@ namespace luastg
 	{
 	}
 
+	// ResourcePool
+
+	bool ResourceMgr::CreatePool(std::string_view name)
+	{
+		if (name.empty()) return false;
+		std::string key(name);
+
+		// Reserved names (compatibility)
+		if (key == "global" || key == "stage") return false;
+
+		auto it = m_CustomPools.find(key);
+		if (it != m_CustomPools.end()) return false; // Exists: skip
+
+		m_CustomPools.emplace(key, std::make_unique<ResourcePool>(this, ResourcePoolType::None, key));
+		return true;
+	}
+
+	bool ResourceMgr::RemovePool(std::string_view name)
+	{
+		if (name.empty()) return false;
+		std::string key(name);
+
+		auto it = m_CustomPools.find(key);
+		if (it == m_CustomPools.end()) return false;
+
+		if (m_pActiveCustomPool == it->second.get())
+		{
+			// If this pool was active, clear the current active pool (obviously)
+			m_pActiveCustomPool = nullptr;
+			m_ActiveCustomPoolName.clear();
+		}
+		it->second->Clear();
+		m_CustomPools.erase(it);
+		return true;
+	}
+
+	ResourcePool* ResourceMgr::GetPool(std::string_view name) noexcept
+	{
+		if (name.empty()) return nullptr;
+		std::string key(name);
+
+		if (key == "global") return &m_GlobalResourcePool;
+		if (key == "stage") return &m_StageResourcePool;
+
+		auto it = m_CustomPools.find(key);
+		return it != m_CustomPools.end() ? it->second.get() : nullptr;
+	}
+
+	bool ResourceMgr::SetActivedPoolByName(std::string_view name) noexcept
+	{
+		// Disable custom pool if name is empty or null.
+		if (name == nullptr || name == std::string_view{}) {
+			m_pActiveCustomPool = nullptr;
+			m_ActiveCustomPoolName.clear();
+			return true;
+		}
+
+		std::string key(name);
+
+		#pragma region Reserved pools
+		if (key == "global") {
+			m_pActiveCustomPool = nullptr;
+            m_ActiveCustomPoolName.clear();
+            m_ActivedPool = ResourcePoolType::Global;
+            return true;
+		}
+		if (key == "stage") {
+            m_pActiveCustomPool = nullptr;
+            m_ActiveCustomPoolName.clear();
+            m_ActivedPool = ResourcePoolType::Stage;
+            return true;
+        }
+		#pragma endregion
+
+		auto it = m_CustomPools.find(key);
+		if (it == m_CustomPools.end()) return false;
+
+		m_pActiveCustomPool = it->second.get();
+		m_ActiveCustomPoolName = key;
+		return true;
+	}
+
 	// 资源池管理
 
 	void ResourceMgr::ClearAllResource() noexcept {
@@ -26,6 +108,8 @@ namespace luastg
 	}
 
 	ResourcePool* ResourceMgr::GetActivedPool() noexcept {
+		if (m_pActiveCustomPool) return m_pActiveCustomPool;
+
 		return GetResourcePool(m_ActivedPool);
 	}
 
@@ -40,77 +124,252 @@ namespace luastg
 		}
 	}
 
+	std::vector<std::string> ResourceMgr::EnumPools() const noexcept
+	{
+		std::vector<std::string> ret;
+		ret.reserve(2 + m_CustomPools.size());
+		ret.push_back("global");
+		ret.push_back("stage");
+		for (auto const& kv : m_CustomPools)
+			ret.push_back(kv.first);
+		return ret;
+	}
+
 	// 自动查找资源池资源
 
+	// help.
 	core::SmartReference<IResourceTexture> ResourceMgr::FindTexture(const char* name) noexcept {
-
 		core::SmartReference<IResourceTexture> tRet;
-		if (!(tRet = m_StageResourcePool.GetTexture(name)))
-			tRet = m_GlobalResourcePool.GetTexture(name);
+		
+		// Search for active resource pool first
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetTexture(name)))
+				return tRet;
+		}
+
+		// Hardcoded pools search
+		if ((tRet = m_StageResourcePool.GetTexture(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetTexture(name)))
+            return tRet;
+		
+		// Last ditch effort, search this fucker in all custom pools!!!!
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetTexture(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceSprite> ResourceMgr::FindSprite(const char* name) noexcept {
 		core::SmartReference<IResourceSprite> tRet;
-		if (!(tRet = m_StageResourcePool.GetSprite(name)))
-			tRet = m_GlobalResourcePool.GetSprite(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetSprite(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetSprite(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetSprite(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetSprite(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceAnimation> ResourceMgr::FindAnimation(const char* name) noexcept {
 		core::SmartReference<IResourceAnimation> tRet;
-		if (!(tRet = m_StageResourcePool.GetAnimation(name)))
-			tRet = m_GlobalResourcePool.GetAnimation(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetAnimation(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetAnimation(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetAnimation(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetAnimation(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceMusic> ResourceMgr::FindMusic(const char* name) noexcept {
 		core::SmartReference<IResourceMusic> tRet;
-		if (!(tRet = m_StageResourcePool.GetMusic(name)))
-			tRet = m_GlobalResourcePool.GetMusic(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetMusic(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetMusic(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetMusic(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetMusic(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceSoundEffect> ResourceMgr::FindSound(const char* name) noexcept {
 		core::SmartReference<IResourceSoundEffect> tRet;
-		if (!(tRet = m_StageResourcePool.GetSound(name)))
-			tRet = m_GlobalResourcePool.GetSound(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetSound(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetSound(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetSound(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetSound(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceParticle> ResourceMgr::FindParticle(const char* name) noexcept {
 		core::SmartReference<IResourceParticle> tRet;
-		if (!(tRet = m_StageResourcePool.GetParticle(name)))
-			tRet = m_GlobalResourcePool.GetParticle(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetParticle(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetParticle(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetParticle(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetParticle(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceFont> ResourceMgr::FindSpriteFont(const char* name) noexcept {
 		core::SmartReference<IResourceFont> tRet;
-		if (!(tRet = m_StageResourcePool.GetSpriteFont(name)))
-			tRet = m_GlobalResourcePool.GetSpriteFont(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetSpriteFont(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetSpriteFont(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetSpriteFont(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetSpriteFont(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceFont> ResourceMgr::FindTTFFont(const char* name) noexcept {
 		core::SmartReference<IResourceFont> tRet;
-		if (!(tRet = m_StageResourcePool.GetTTFFont(name)))
-			tRet = m_GlobalResourcePool.GetTTFFont(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetTTFFont(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetTTFFont(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetTTFFont(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetTTFFont(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourcePostEffectShader> ResourceMgr::FindFX(const char* name) noexcept {
 		core::SmartReference<IResourcePostEffectShader> tRet;
-		if (!(tRet = m_StageResourcePool.GetFX(name)))
-			tRet = m_GlobalResourcePool.GetFX(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetFX(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetFX(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetFX(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetFX(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
 	core::SmartReference<IResourceModel> ResourceMgr::FindModel(const char* name) noexcept
 	{
 		core::SmartReference<IResourceModel> tRet;
-		if (!(tRet = m_StageResourcePool.GetModel(name)))
-			tRet = m_GlobalResourcePool.GetModel(name);
+		if (m_pActiveCustomPool)
+		{
+			if ((tRet = m_pActiveCustomPool->GetModel(name)))
+				return tRet;
+		}
+
+		if ((tRet = m_StageResourcePool.GetModel(name)))
+            return tRet;
+        if ((tRet = m_GlobalResourcePool.GetModel(name)))
+            return tRet;
+		
+		for (auto const& kv : m_CustomPools)
+		{
+			auto p = kv.second.get();
+			if (p == m_pActiveCustomPool) continue;
+			if ((tRet = p->GetModel(name)))
+				return tRet;
+		}
 		return tRet;
 	}
 
