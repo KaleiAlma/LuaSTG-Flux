@@ -162,6 +162,7 @@ namespace luastg
         std::unordered_map<std::string, std::unique_ptr<ResourcePool>> m_CustomPools;
         ResourcePool* m_pActiveCustomPool = nullptr;
         std::string m_ActiveCustomPoolName;
+        mutable std::mutex m_CustomPoolsMutex;
     public:
         ResourcePoolType GetActivedPoolType() noexcept;
         void SetActivedPoolType(ResourcePoolType t) noexcept;

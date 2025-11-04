@@ -21,7 +21,12 @@ namespace luastg
 		auto it = m_CustomPools.find(key);
 		if (it != m_CustomPools.end()) return false; // Exists: skip
 
+		std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
+
 		m_CustomPools.emplace(key, std::make_unique<ResourcePool>(this, ResourcePoolType::None, key));
+
+		spdlog::info("[luastg] Resource Pool '%s' created", name);
+
 		return true;
 	}
 
@@ -32,6 +37,8 @@ namespace luastg
 
 		auto it = m_CustomPools.find(key);
 		if (it == m_CustomPools.end()) return false;
+
+		std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
 
 		if (m_pActiveCustomPool == it->second.get())
 		{
@@ -52,6 +59,8 @@ namespace luastg
 		if (key == "global") return &m_GlobalResourcePool;
 		if (key == "stage") return &m_StageResourcePool;
 
+		std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
+
 		auto it = m_CustomPools.find(key);
 		return it != m_CustomPools.end() ? it->second.get() : nullptr;
 	}
@@ -59,7 +68,8 @@ namespace luastg
 	bool ResourceMgr::SetActivedPoolByName(std::string_view name) noexcept
 	{
 		// Disable custom pool if name is empty or null.
-		if (name == nullptr || name == std::string_view{}) {
+		if (name.empty()) {
+			std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
 			m_pActiveCustomPool = nullptr;
 			m_ActiveCustomPoolName.clear();
 			return true;
@@ -69,12 +79,14 @@ namespace luastg
 
 		#pragma region Reserved pools
 		if (key == "global") {
+			std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
 			m_pActiveCustomPool = nullptr;
             m_ActiveCustomPoolName.clear();
             m_ActivedPool = ResourcePoolType::Global;
             return true;
 		}
 		if (key == "stage") {
+			std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
             m_pActiveCustomPool = nullptr;
             m_ActiveCustomPoolName.clear();
             m_ActivedPool = ResourcePoolType::Stage;
@@ -82,11 +94,14 @@ namespace luastg
         }
 		#pragma endregion
 
-		auto it = m_CustomPools.find(key);
-		if (it == m_CustomPools.end()) return false;
+		{
+			std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
+			auto it = m_CustomPools.find(key);
+			if (it == m_CustomPools.end()) return false;
+			m_pActiveCustomPool = it->second.get();
+			m_ActiveCustomPoolName = key;
+		}
 
-		m_pActiveCustomPool = it->second.get();
-		m_ActiveCustomPoolName = key;
 		return true;
 	}
 
@@ -130,6 +145,9 @@ namespace luastg
 		ret.reserve(2 + m_CustomPools.size());
 		ret.push_back("global");
 		ret.push_back("stage");
+
+		std::lock_guard<std::mutex> lk(m_CustomPoolsMutex);
+
 		for (auto const& kv : m_CustomPools)
 			ret.push_back(kv.first);
 		return ret;

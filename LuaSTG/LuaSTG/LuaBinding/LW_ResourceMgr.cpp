@@ -10,11 +10,21 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 			ResourceMgr::SetResourceLoadingLog((bool)lua_toboolean(L, 1));
 			return 0;
 		}
+		static int CreateResourcePool(lua_State* L) noexcept {
+			const char* s = luaL_checkstring(L, 1);
+			LRES.CreatePool(s);
+			return 0;
+		}
+		static int RemoveResourcePool(lua_State* L) noexcept {
+			const char* s = luaL_checkstring(L, 1);
+			LRES.RemovePool(s);
+			return 0;
+		}
 		static int SetResourceStatus(lua_State* L) noexcept
 		{
 			const char* s = luaL_checkstring(L, 1);
 			if (!LRES.SetActivedPoolByName(s))
-				return luaL_error(L, "invalid argument #1 for 'SetResourceStatuc', pool '%s' not found", s);
+				return luaL_error(L, "invalid argument #1 for 'SetResourceStatus', pool '%s' not found", s);
 			return 0;
 		}
 		static int GetResourceStatus(lua_State* L) noexcept
@@ -232,6 +242,7 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 		}
 		static int LoadTTF(lua_State* L) noexcept
 		{
+			spdlog::error("Calling LoadTTF binding");
 			ResourcePool* pActivedPool = LRES.GetActivedPool();
 			if (!pActivedPool) {
 				return luaL_error(L, "can't load resource at this time.");
@@ -647,6 +658,8 @@ void luastg::binding::ResourceManager::Register(lua_State* L) noexcept
 
 	luaL_Reg const lib[] = {
 		{ "SetResLoadInfo", &Wrapper::SetResLoadInfo },
+		{ "CreateResourcePool", &Wrapper::CreateResourcePool },
+		{ "RemoveResourcePool", &Wrapper::RemoveResourcePool },
 		{ "SetResourceStatus", &Wrapper::SetResourceStatus },
 		{ "GetResourceStatus", &Wrapper::GetResourceStatus },
 		{ "LoadTexture", &Wrapper::LoadTexture },
