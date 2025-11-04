@@ -18,8 +18,6 @@
 
 // ---------- ---------- game play ---------- ---------- //
 
-// Sakuya: THE WORLD!
-#define LUASTG_ENABLE_THE_WORLD
 
 // !!!deprecated
 // lstg.GameObject.pause
@@ -32,8 +30,8 @@
 // BAKACHU
 #define GLOBAL_SCALE_COLLI_SHAPE
 
-// !!!deprecated
-// defective design (by BAKAESC)
+// Enable multi-world system masking API.
+// v0.1.3+
 #define USING_MULTI_GAME_WORLD
 
 // lstg.GameObject.ps
