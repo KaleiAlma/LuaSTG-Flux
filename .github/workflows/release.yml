@@ -61,8 +61,8 @@ jobs:
       #- name: Test
       #  run: build/bin/main.exe
 
-      - name: CMake workflow (x86)
-        run: cmake --workflow --preset windows-x86-release
+      # - name: CMake workflow (x86)
+      #   run: cmake --workflow --preset windows-x86-release
       
       - name: CMake workflow (amd64)
         run: cmake --workflow --preset windows-amd64-release
