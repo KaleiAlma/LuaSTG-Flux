@@ -26,7 +26,7 @@ namespace core::Graphics::Direct3D11 {
 		bool setSize(Vector2U size) override;
 
 		bool uploadPixelData(RectU rc, void const* data, uint32_t pitch) override;
-		void setPixelData(IData* p_data) override { m_data = p_data; }
+		void setPixelData(IData* p_data) override { m_data = p_data; m_is_data_raw = true; }
 
 		bool saveToFile(StringView path) override;
 
@@ -46,6 +46,7 @@ namespace core::Graphics::Direct3D11 {
 		[[nodiscard]] ID3D11ShaderResourceView* GetView() const noexcept { return m_view.Get(); }
 
 		bool initialize(Device* device, StringView path, bool mipmap);
+		bool initialize(Device* device, void const* data, size_t size, bool mipmap);
 		bool initialize(Device* device, Vector2U size, bool is_render_target);
 		bool createResource();
 
@@ -57,10 +58,13 @@ namespace core::Graphics::Direct3D11 {
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_texture;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_view;
 		Vector2U m_size{};
-		bool m_dynamic{ false };
-		bool m_pre_mul_alpha{ false };
-		bool m_mipmap{ false };
-		bool m_is_render_target{ false };
-		bool m_initialized{ false };
+		struct {
+			bool m_dynamic : 1 = false;
+			bool m_pre_mul_alpha : 1 = false;
+			bool m_mipmap : 1 = false;
+			bool m_is_render_target : 1 = false;
+			bool m_initialized : 1 = false;
+			bool m_is_data_raw : 1 = false;
+		};
 	};
 }

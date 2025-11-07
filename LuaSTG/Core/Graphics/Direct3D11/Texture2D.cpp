@@ -78,7 +78,26 @@ namespace core::Graphics::Direct3D11 {
 		assert(device);
 		assert(!path.empty());
 		m_device = device;
+		m_is_data_raw = false;
 		m_source_path = path;
+		m_mipmap = mipmap;
+		if (!createResource()) {
+			return false;
+		}
+		m_initialized = true;
+		m_device->addEventListener(this);
+		return true;
+	}
+	bool Texture2D::initialize(Device* const device, void const* data, size_t size, bool const mipmap) {
+		assert(device);
+		assert(data);
+		assert(size > 0);
+		m_device = device;
+		m_is_data_raw = false;
+		if (!IData::create(size, m_data.put())) {
+			return false;
+		}
+		std::memcpy(m_data->data(), data, size);
 		m_mipmap = mipmap;
 		if (!createResource()) {
 			return false;
@@ -114,7 +133,7 @@ namespace core::Graphics::Direct3D11 {
 		if (!d3d11_device || !d3d11_devctx)
 			return false;
 
-		if (m_data) {
+		if (m_data && m_is_data_raw) {
 			D3D11_TEXTURE2D_DESC tex2d_desc = {
 				.Width = m_size.x,
 				.Height = m_size.y,
@@ -157,20 +176,22 @@ namespace core::Graphics::Direct3D11 {
 			}
 			M_D3D_SET_DEBUG_NAME(m_view.Get(), "Texture2D_D3D11::d3d11_srv");
 		}
-		else if (!m_source_path.empty()) {
-			SmartReference<IData> src;
-			if (!FileSystemManager::readFile(m_source_path, src.put())) {
+		else if (!m_source_path.empty() && !m_data) {
+			// SmartReference<IData> src;
+			if (!FileSystemManager::readFile(m_source_path, m_data.put())) {
 				spdlog::error("[core] 无法加载文件 '{}'", m_source_path);
 				return false;
 			}
-
+			m_is_data_raw = false;
+		}
+		if (m_data && !m_is_data_raw) {
 			// 加载图片
 			Microsoft::WRL::ComPtr<ID3D11Resource> res;
 			// 先尝试以 DDS 格式加载
 			DirectX::DDS_ALPHA_MODE dds_alpha_mode = DirectX::DDS_ALPHA_MODE_UNKNOWN;
 			HRESULT const hr1 = DirectX::CreateDDSTextureFromMemoryEx(
 				d3d11_device, m_mipmap ? d3d11_devctx : nullptr,
-				static_cast<uint8_t const*>(src->data()), src->size(),
+				static_cast<uint8_t const*>(m_data->data()), m_data->size(),
 				0,
 				D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
 				DirectX::DDS_LOADER_IGNORE_SRGB, // TODO: 这里也同样忽略了 sRGB，看以后渲染管线颜色空间怎么改
@@ -180,7 +201,7 @@ namespace core::Graphics::Direct3D11 {
 				// 尝试以普通图片格式加载
 				HRESULT const hr2 = DirectX::CreateWICTextureFromMemoryEx(
 					d3d11_device, m_mipmap ? d3d11_devctx : nullptr,
-					static_cast<uint8_t const*>(src->data()), src->size(),
+					static_cast<uint8_t const*>(m_data->data()), m_data->size(),
 					0,
 					D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
 					DirectX::WIC_LOADER_DEFAULT | DirectX::WIC_LOADER_IGNORE_SRGB,
@@ -191,7 +212,7 @@ namespace core::Graphics::Direct3D11 {
 					// 尝试以 QOI 图片格式加载
 					HRESULT const hr3 = DirectX::CreateQOITextureFromMemoryEx(
 						d3d11_device, m_mipmap ? d3d11_devctx : nullptr, m_device->GetWICImagingFactory(),
-						static_cast<uint8_t const*>(src->data()), src->size(),
+						static_cast<uint8_t const*>(m_data->data()), m_data->size(),
 						0,
 						D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
 						DirectX::QOI_LOADER_DEFAULT | DirectX::QOI_LOADER_IGNORE_SRGB,
@@ -276,7 +297,16 @@ namespace core::Graphics::Direct3D11 {
 		*pp_texture = buffer.detach();
 		return true;
 	}
-	//bool createTextureFromMemory(void const* data, size_t size, bool mipmap, ITexture2D** pp_texture);
+	bool createTextureFromMemory(void const* data, size_t size, bool mipmap, ITexture2D** pp_texture) {
+		*pp_texture = nullptr;
+		SmartReference<Texture2D> buffer;
+		buffer.attach(new Texture2D);
+		if (!buffer->initialize(this, data, size, mipmap)) {
+			return false;
+		}
+		*pp_texture = buffer.detach();
+		return true;
+	}
 	bool Device::createTexture(Vector2U const size, ITexture2D** const pp_texture) {
 		*pp_texture = nullptr;
 		SmartReference<Texture2D> buffer;
