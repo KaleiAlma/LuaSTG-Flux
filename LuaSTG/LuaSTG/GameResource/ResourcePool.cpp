@@ -241,7 +241,7 @@ namespace luastg
         core::SmartReference<core::Graphics::ITexture2D> p_texture;
         if (!LAPP.GetAppModel()->getDevice()->createTextureFromMemory(data.data(), data.size(), mipmaps, p_texture.put()))
         {
-            spdlog::error("[luastg] Failed to create texture '{}' from '{}'", path, name);
+            spdlog::error("[luastg] Failed to create texture '{}' from binary data", name);
             return false;
         }
 
@@ -259,7 +259,7 @@ namespace luastg
     
         if (ResourceMgr::GetResourceLoadingLog())
         {
-            spdlog::info("[luastg] LoadTexture: Texture '{}' loaded from '{}' ({})", path, name, getResourcePoolTypeName());
+            spdlog::info("[luastg] LoadTexture: Texture '{}' loaded from binary data ({})", name, getResourcePoolTypeName());
         }
     
         return true;
