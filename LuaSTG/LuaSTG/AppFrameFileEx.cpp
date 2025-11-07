@@ -1,7 +1,7 @@
 #include "stb_image.h"
 
 #include "AppFrame.h"
-#include "Core/FileManager.hpp"
+#include "core/FileSystem.hpp"
 
 using namespace luastg;
 
