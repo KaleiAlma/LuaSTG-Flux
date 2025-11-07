@@ -297,7 +297,7 @@ namespace core::Graphics::Direct3D11 {
 		*pp_texture = buffer.detach();
 		return true;
 	}
-	bool createTextureFromMemory(void const* data, size_t size, bool mipmap, ITexture2D** pp_texture) {
+	bool Device::createTextureFromMemory(void const* data, size_t size, bool mipmap, ITexture2D** pp_texture) {
 		*pp_texture = nullptr;
 		SmartReference<Texture2D> buffer;
 		buffer.attach(new Texture2D);
